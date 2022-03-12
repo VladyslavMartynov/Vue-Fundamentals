@@ -27,13 +27,16 @@ export default {
 </script>
 
 <style scoped>
-.post-list-enter-active,
-.post-list-leave-active {
-  transition: all 0.5s ease;
-}
-.post-list-enter-from,
-.post-list-leave-to {
-  opacity: 0;
-  transform: translateX(30px);
-}
+  .post-list-enter-active,
+  .post-list-leave-active {
+    transition: all 0.5s ease;
+  }
+  .post-list-enter-from,
+  .post-list-leave-to {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  .post-list-move {
+    transition: transform 0.8s ease;
+  }
 </style>
