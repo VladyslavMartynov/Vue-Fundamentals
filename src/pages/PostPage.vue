@@ -1,89 +1,78 @@
 <template>
   <div>
-    <h1>Posts Page</h1>
-    <my-input class="app_search" v-model="searchQuery" placeholder="Search..."/>
+    <h1>Page with Posts</h1>
+    <my-input
+        class="app_search"
+        :model-value="searchQuery"
+        @update:model-value="setSearchQuery"
+        placeholder="Search..."
+    />
     <div class="app__btn">
       <my-button @click="showDialog">Create Post</my-button>
-      <my-select v-model="selectedSort" :options="sortOptions"/>
+      <my-select
+          :model-value="selectedSort"
+          @update:model-value="setSelectedSort"
+          :options="sortOptions"
+      />
     </div>
     <my-modal v-model:is-open="modalVisible">
       <post-form @create="createPost"/>
     </my-modal>
     <post-list v-if="!isLoading" v-bind:posts="sortedAndSearchedPosts" @remove="removePost"/>
     <div v-else>...Loading</div>
-    <my-pagination v-bind:current-page="page" v-bind:total-pages="totalPages" @changePage="changePage"/>
+    <my-pagination v-bind:current-page="page" v-bind:total-pages="totalPages" @changePage="setPage"/>
   </div>
 </template>
 
 <script>
-import axios from "axios";
 import PostForm from "@/components/PostForm";
 import PostList from "@/components/PostList";
+import { mapGetters,mapActions, mapMutations, mapState } from 'vuex';
 export default {
   name: "App",
   components: { PostList, PostForm },
   data() {
     return {
-      posts: [],
       modalVisible: false,
-      isLoading: false,
-      isError: '',
-      selectedSort: '',
-      searchQuery: '',
-      page: 1,
-      perPage: 10,
-      totalPages: 0,
-      sortOptions: [
-        { value: 'title', name: 'By title'},
-        { value: 'body',  name: 'By body'}
-      ]
     }
   },
   methods: {
+    ...mapMutations({
+      setPage: 'post/setPage',
+      setSearchQuery: 'post/setSearchQuery',
+      setSelectedSort: 'post/setSelectedSort',
+      removePost: 'post/removePost'
+    }),
+    ...mapActions({
+      fetchUserPosts: 'post/fetchUserPosts'
+    }),
     createPost(post) {
       this.posts.push(post);
       this.modalVisible = false;
     },
-    removePost(post) {
-      this.posts = this.posts.filter(({ id }) => post.id !== id )
-    },
     showDialog() {
       this.modalVisible = true;
     },
-    changePage(pageNumber) {
-      this.page = pageNumber;
-    },
-    async fetchUserPosts() {
-      try {
-        this.isLoading = true;
-        const response = await axios.get('https://jsonplaceholder.typicode.com/posts', {
-          params: {
-            _page: this.page,
-            _limit: this.perPage
-          }
-        });
-        this.totalPages = Math.ceil(response.headers['x-total-count'] / this.perPage)
-        this.posts = response.data;
-      } catch (_) {
-        this.isError = 'Fetch error!';
-        alert(this.isError);
-      } finally {
-        this.isLoading = false;
-      }
-    }
   },
   mounted() {
     this.fetchUserPosts();
   },
   computed: {
-    sortedPosts() {
-      return [...this.posts].sort((post1, post2) => {
-        return post1[this.selectedSort]?.localeCompare(post2[this.selectedSort])
-      })
-    },
-    sortedAndSearchedPosts() {
-      return this.sortedPosts.filter(post => post.title.toLowerCase().includes(this.searchQuery.toLowerCase()))
-    }
+    ...mapState({
+      posts: state => state.post.posts ,
+      isLoading: state => state.post.isLoading,
+      isError: state => state.post.isError,
+      selectedSort: state => state.post.selectedSort,
+      searchQuery: state => state.post.searchQuery,
+      page: state => state.post.page,
+      perPage: state => state.post.perPage,
+      totalPages: state => state.post.totalPages,
+      sortOptions: state => state.post.sortOptions
+    }),
+    ...mapGetters({
+      sortedPosts: 'post/sortedPosts',
+      sortedAndSearchedPosts: 'post/sortedAndSearchedPosts'
+    })
   },
   watch: {
     page() {

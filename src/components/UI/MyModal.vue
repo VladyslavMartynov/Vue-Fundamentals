@@ -7,19 +7,11 @@
 </template>
 
 <script>
+import toggleMixin from "@/mixins/toggleMixin";
+
 export default {
   name: "my-modal",
-  props: {
-    isOpen: {
-      type: Boolean,
-      default: false
-    }
-  },
-  methods: {
-    hideModal() {
-      this.$emit('update:isOpen', false)
-    }
-  }
+  mixins: [toggleMixin]
 }
 </script>
 
