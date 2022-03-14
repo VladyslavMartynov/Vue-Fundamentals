@@ -27,57 +27,33 @@
 <script>
 import PostForm from "@/components/PostForm";
 import PostList from "@/components/PostList";
-import { mapGetters,mapActions, mapMutations, mapState } from 'vuex';
+import usePosts from "@/hooks/usePosts";
+import useSortedPosts from "@/hooks/useSortedPosts";
+import useSearchedPosts from "@/hooks/useSearchedPosts";
 export default {
   name: "App",
   components: { PostList, PostForm },
   data() {
     return {
-      modalVisible: false,
+      sortOptions: [
+        { value: 'title', name: 'By name' },
+        { value: 'body', name: 'By description' }
+      ]
     }
   },
-  methods: {
-    ...mapMutations({
-      setPage: 'post/setPage',
-      setSearchQuery: 'post/setSearchQuery',
-      setSelectedSort: 'post/setSelectedSort',
-      removePost: 'post/removePost'
-    }),
-    ...mapActions({
-      fetchUserPosts: 'post/fetchUserPosts'
-    }),
-    createPost(post) {
-      this.posts.push(post);
-      this.modalVisible = false;
-    },
-    showDialog() {
-      this.modalVisible = true;
-    },
-  },
-  mounted() {
-    this.fetchUserPosts();
-  },
-  computed: {
-    ...mapState({
-      posts: state => state.post.posts ,
-      isLoading: state => state.post.isLoading,
-      isError: state => state.post.isError,
-      selectedSort: state => state.post.selectedSort,
-      searchQuery: state => state.post.searchQuery,
-      page: state => state.post.page,
-      perPage: state => state.post.perPage,
-      totalPages: state => state.post.totalPages,
-      sortOptions: state => state.post.sortOptions
-    }),
-    ...mapGetters({
-      sortedPosts: 'post/sortedPosts',
-      sortedAndSearchedPosts: 'post/sortedAndSearchedPosts'
-    })
-  },
-  watch: {
-    page() {
-      this.fetchUserPosts();
-    }
+  setup(props) {
+     const { totalPages, posts, isLoading } = usePosts(10);
+     const { sortedPosts, selectedSort } = useSortedPosts(posts);
+     const { searchedPosts, searchQuery } = useSearchedPosts(sortedPosts);
+     return {
+       totalPages,
+       posts,
+       isLoading,
+       sortedPosts,
+       selectedSort,
+       searchedPosts,
+       searchQuery
+     }
   }
 }
 </script>
